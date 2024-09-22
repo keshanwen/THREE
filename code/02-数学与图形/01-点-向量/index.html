@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+      canvas {
+        width: 100vw;
+        height: 100vh;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas></canvas>
+    <script src="./main/index.js"></script>
+    <script>
+      let shape = new Shape("canvas");
+
+      class Point {
+        constructor(x, y) {
+          this.x = x;
+          this.y = y;
+        }
+        draw() {
+          shape.drawPoint(this.x, this.y);
+        }
+        add(vector) {
+          return new Point(this.x + vector.x, this.y + vector.y);
+        }
+        minus(point) {
+          return new Vector(this.x - point.x, this.y - point.y);
+        }
+      }
+
+      class Vector {
+        constructor(x, y) {
+          this.x = x;
+          this.y = y;
+        }
+        draw() {
+          shape.drawLine(0, 0, this.x, this.y);
+        }
+        add(vector) {
+          return new Vector(this.x + vector.x, this.y + vector.y);
+        }
+      }
+      let p1 = new Point(0, 0);
+      let v1 = new Vector(0.5, 0.5);
+      let p2 = p1.add(v1);
+      let v2 = p1.minus(p2);
+      p1.draw();
+      p2.draw();
+    </script>
+  </body>
+</html>

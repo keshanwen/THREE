@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+      canvas {
+        width: 100vw;
+        height: 100vh;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas></canvas>
+    <script src="./main/index.js"></script>
+    <script>
+      let shape = new Shape("canvas");
+
+      window.addEventListener("click", (event) => {
+        let x = (event.clientX / window.innerWidth - 0.5) * 2;
+        let y = -(event.clientY / window.innerHeight - 0.5) * 2;
+        // shape.drawPoint(x, y);
+        if (shape.vertices.length == 0) {
+          shape.moveTo(x, y);
+        } else {
+          shape.lineTo(x, y);
+        }
+      });
+    </script>
+  </body>
+</html>
