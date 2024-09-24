@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+      canvas {
+        width: 200px;
+        height: 200px;
+        display: block;
+        border: 1px solid dimgray;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas></canvas>
+
+    <script>
+      // 获取canvas元素
+      let canvas = document.querySelector("canvas");
+      //   设置canvas的宽高
+      canvas.width = 200;
+      canvas.height = 200;
+      // 获取webgl上下文
+      let gl = canvas.getContext("webgl");
+
+      // 创建顶点着色器
+     const vShader = gl.createShader(gl.VERTEX_SHADER)
+
+    /*  
+        顶点着色器源码
+        v_position 是由外部传入的变量，gl_Position 是 glsl 内置的变量，表示的是顶点的位置.
+        如何将外部顶点数据传给 v_position 呢?
+    */  
+     gl.shaderSource(
+        vShader,
+        /* glsl */`
+            attribute vec4 v_position;
+            void main() {
+                gl_Position = v_position;
+            }
+        ` 
+     )
+    // 编译顶点着色器
+    gl.compileShader(vShader)
+    
+    // 创建片元着色器
+    const fShader = gl.createShader(gl.FRAGMENT_SHADER)
+
+    // 片元着色器源码
+    gl.shaderSource(
+        fShader,
+        /* glsl */`
+            void main() {
+                gl_FragColor = vec4(1.0,0.0,0.0,1.0);
+            }
+        ` 
+    )        
+    
+    // 编译片元着色器
+    gl.compileShader(fShader)        
+
+    // 创建着色器程序连接顶点着色器和片元着色器
+    const program = gl.createProgram()
+    // 添加顶点着色器
+    gl.attachShader(program,vShader)
+    // 添加片元着色器
+    gl.attachShader(program, fShader)
+    // 连接着色器程序
+    gl.linkProgram(program)
+    // 使用着色器程序
+    gl.useProgram(program)
+    
+    /*
+        GLint gl.getAttribLocation(program, name); (简单理解为 着色器中定义的变量)
+        返回了给定WebGLProgram对象中某属性的下标指向位置。
+            参数
+            program
+            一个包含了属性参数的WebGLProgram 对象。
+
+            name
+            需要获取下标指向位置的 DOMString 属性参数名
+
+            返回值
+            表明属性位置的下标 GLint 数字，如果找不到该属性则返回 -1。
+    */ 
+    // 创建顶点数据
+    const position = gl.getAttribLocation(program,"v_position")
+    // 创建缓冲区
+    const pBuffer = gl.createBuffer()
+    // 绑定缓冲区
+    gl.bindBuffer(gl.ARRAY_BUFFER,pBuffer)    
+    
+    /*
+       void gl.bindBuffer(target, buffer);  将给定的 WebGLBuffer 绑定到目标。
+            
+       target (理解为要绑定的目标的用途)
+            GLenum 指定绑定点 (target)。可能的值：
+
+            gl.ARRAY_BUFFER: 包含顶点属性的 Buffer，如顶点坐标，纹理坐标数据或顶点颜色数据。
+            gl.ELEMENT_ARRAY_BUFFER: 用于元素索引的 Buffer。
+            当使用 WebGL 2 context时，可以使用以下值：
+            gl.COPY_READ_BUFFER: 从一个 Buffer 对象复制到另一个 Buffer 对象。
+            gl.COPY_WRITE_BUFFER: 从一个 Buffer 对象复制到另一个 Buffer 对象。
+            gl.TRANSFORM_FEEDBACK_BUFFER: Buffer for transform feedback operations.
+            gl.UNIFORM_BUFFER: 用于存储统一块的 Buffer。
+            gl.PIXEL_PACK_BUFFER: 用于像素传输操作的 Buffer。
+            gl.PIXEL_UNPACK_BUFFER: 用于像素传输操作的 Buffer。
+        buffer
+            要绑定的 WebGLBuffer 。
+    */ 
+
+    /*
+        WebGLRenderingContext.bufferData() 方法创建并初始化了 Buffer 对象的数据存储区。
+        // WebGL1:
+        void gl.bufferData(target, size, usage);
+        void gl.bufferData(target, ArrayBuffer? srcData, usage);
+        void gl.bufferData(target, ArrayBufferView srcData, usage);
+
+        // WebGL2:
+        void gl.bufferData(target, ArrayBufferView srcData, usage, srcOffset, length);    
+    */ 
+    // 设置顶点数据
+    gl.bufferData(
+        gl.ARRAY_BUFFER,
+        new Float32Array([0.0, 0.5, -0.5, -0.5, 0.5, -0.5, -1, 1, 0.0, 1, 0.0, 0.0]),
+        gl.STATIC_DRAW // 静态绘制
+    )  
+    
+    // 将顶点数据提供给到 attribute 变量
+    gl.vertexAttribPointer(
+        // 告诉 attribute 变量从哪里获取数据
+        position,
+        2, // 每次迭代提供2个单位的数据
+        gl.FLOAT, // 每个单位的数据类型是32位浮点型
+        false, // 不需要归一化数据
+        0, // 0 步长
+        0 // 从缓冲区的哪个位置开始读取数据
+    )
+
+    // 开启 attribute 变量
+    gl.enableVertexAttribArray(position)
+
+    // 绘制
+    gl.drawArrays(gl.TRIANGLES,0,3)
+
+    // gl.drawArrays(gl.TRIANGLES, 0, 3);
+    // gl.drawArrays(gl.TRIANGLES, 3, 3);
+    /*
+        gl.drawArrays(mode, first, count )   
+        用于从向量数组中绘制图元
+
+        gl.POINTS: 绘制一系列点。
+        gl.LINE_STRIP: 绘制一个线条。即，绘制一系列线段，上一点连接下一点。
+        gl.LINE_LOOP: 绘制一个线圈。即，绘制一系列线段，上一点连接下一点，并且最后一点与第一个点相连。
+        gl.LINES: 绘制一系列单独线段。每两个点作为端点，线段之间不连接。
+        gl.TRIANGLE_STRIP：绘制一个三角带。
+        gl.TRIANGLE_FAN：绘制一个三角扇。
+        gl.TRIANGLES: 绘制一系列三角形。每三个点作为顶点。
+
+        first
+        GLint 类型，指定从哪个点开始绘制。
+
+        count
+        GLsizei 类型，指定绘制需要使用到多少个点。
+    */   
+    </script>
+  </body>
+</html>

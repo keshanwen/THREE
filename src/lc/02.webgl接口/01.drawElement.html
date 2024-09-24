@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>webgl</title>
+  <script src="./lib.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    canvas {
+      margin: 50px 30px;
+      width: 500px;
+      height: 500px;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="canvas"></canvas>
+  <script>
+    /** @type {HTMLCanvasElement} */
+    //------------------------------------------------------创建画布
+
+    // 获取webgl绘图上下文
+    const gl = canvas.getContext('webgl');
+    if (!gl) {
+      throw new Error('WebGL not supported');
+    }
+
+    gl.clear(gl.COLOR_BUFFER_BIT)
+    const vertex = `
+			attribute vec4 aPosition;
+			void main() {
+				gl_Position = aPosition;
+				gl_PointSize = 10.0;
+			}
+		`
+    const fragment = `
+			precision highp float;
+			void main(){
+				gl_FragColor =vec4(1.0,0.0,1.0,1.0);
+			}
+		`
+    // 创建program
+    const program = initShader(gl, vertex, fragment)
+    // 获取attribute变量的数据存储位置
+    const aPosition = gl.getAttribLocation(program, 'aPosition');
+    // 创建缓冲区对象
+    const buffer = gl.createBuffer();
+    // 绑定缓冲区对象
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    // 传入的数据
+    const vertices = new Float32Array([
+      // 第一个三角形
+      -0.3, 0.3,
+      -0.3, -0.3,
+      // 0.3, -0.3,
+      // 第二个三角形
+      0.3, -0.3,
+      0.3, 0.3,
+      // -0.3, 0.3,
+    ])
+    // 索引缓冲区
+    const index = new Uint16Array([0, 1, 2, 0, 2, 3])
+
+    // 开辟空间并写入数据
+    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW)
+    // 缓冲区对象分配给attribute变量
+    gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 0, 0)
+    // 开启attribue变量
+    gl.enableVertexAttribArray(aPosition)
+
+    const indexBuffer = gl.createBuffer();
+    //绑定索引缓冲区
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+    //向索引缓冲区传递索引数据
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, index, gl.STATIC_DRAW);
+
+    // 开始绘制
+    gl.drawElements(gl.TRIANGLES, index.length, gl.UNSIGNED_SHORT, 0);
+
+
+    /*
+    
+        ‌gl.drawArrays和gl.drawElements是WebGL中两种不同的绘制方法，它们的主要区别在于数据组织和绘制方式。‌
+
+        ‌gl.drawArrays‌：
+            这种方法直接使用顶点数据来绘制图形，不需要索引数据。
+            它通过指定一个起始索引和要绘制的顶点数量，直接绘制由顶点构成的图形。
+            gl.drawArrays()方法可以绘制的基本图形类型包括点（gl.POINTS）、线（gl.LINES、gl.LINE_STRIP、gl.LINE_LOOP）、三角形（gl.TRIANGLES、gl.TRIANGLE_STRIP、gl.TRIANGLE_FAN）等。
+            这种方法适用于简单图形的快速绘制，尤其是当图形数据结构较为简单，不需要复杂的索引时。
+
+        ‌gl.drawElements‌：
+            与gl.drawArrays不同，gl.drawElements方法使用索引数据来绘制图形。
+            它接受一个索引缓冲区作为参数，这个索引缓冲区包含了用于绘制图形的顶点索引。
+            这种方法适用于更复杂的图形绘制，尤其是当图形由大量顶点组成，
+            且需要通过索引来组织这些顶点时。使用索引可以优化内存使用和绘制性能，因为它允许重复使用顶点数据，同时通过索引定义图形的连接方式。
+
+        总的来说，gl.drawArrays适用于绘制简单的几何图形，而gl.drawElements则更适合处理复杂的图形和需要优化性能的场景。选择哪种方法取决于具体的图形数据结构和性能要求‌
+    
+    
+    
+    */ 
+
+  </script>
+</body>
+
+</html>
