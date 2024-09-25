@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+      canvas {
+        width: 100vw;
+        height: 100vh;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas></canvas>
+    <script src="./main/index.js"></script>
+    <script>
+      let shape = new Shape("canvas");
+        
+  
+      let point = 0;
+      let arr = [];
+      window.addEventListener("click", (event) => {
+        let x = (event.clientX / window.innerWidth - 0.5) * 2;
+        let y = -(event.clientY / window.innerHeight - 0.5) * 2;
+        // shape.drawPoint(x, y);
+        point++;
+        arr.push([x, y]);
+        shape.drawPoint(x, y);
+        if (point == 2) {
+          shape.drawPoint(arr[0][0], arr[0][1]);
+          let width = arr[1][0] - arr[0][0];
+          let height = arr[1][1] - arr[0][1];
+
+          shape.rect(arr[0][0], arr[0][1], width, height);
+          arr = [];
+          point = 0;
+        }
+      });
+    </script>
+  </body>
+</html>
