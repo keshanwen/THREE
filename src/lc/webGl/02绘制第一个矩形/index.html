@@ -1,0 +1,127 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>作者个人博客，百度 “webgl 郭隆邦” 即可</title>
+</head>
+<body>
+<!--canvas标签创建一个宽高均为500像素，背景为蓝色的矩形画布-->
+<canvas id="webgl" width="500" height="500" style="background-color:#0d72da"></canvas>
+
+</body>
+<!-- 顶点着色器源码 -->
+<script id="vertexShader" type="x-shader/x-vertex">
+  //attribute声明vec4类型变量apos
+  attribute vec4 apos;
+  void main() {
+    //顶点坐标apos赋值给内置变量gl_Position
+    //逐顶点处理数据
+    gl_Position = apos;
+  }
+
+</script>
+<!-- 片元着色器源码 -->
+<script id="fragmentShader" type="x-shader/x-fragment">
+
+  void main() {
+    // 逐片元处理数据，所有片元(像素)设置为红色
+    gl_FragColor = vec4(1.0,0.0,0.0,1.0);
+  }
+
+</script>
+
+<script>
+    //通过getElementById()方法获取canvas画布
+    var canvas=document.getElementById('webgl');
+    //通过方法getContext()获取WebGL上下文
+    var gl=canvas.getContext('webgl');
+
+    //顶点着色器源码
+    const vertexShaderSource = /* glsl */`
+        attribute vec4 apos;
+        void main() {
+            // 顶点坐标 apos 赋值给内置变量 gl_Position
+            // 逐顶点处理数据
+            gl_Position = apos;
+        }
+    `
+
+     //片元着色器源码
+    const fragShaderSource = /* glsl */`
+        void main() {
+           // 逐片元处理数据，所有片元(像素)设置为红色
+           gl_FragColor = vec4(1.0,0.0,0.0,1.0); 
+        }
+    `
+
+    //初始化着色器
+    var program = initShader(gl,vertexShaderSource,fragShaderSource);
+    //获取顶点着色器的位置变量apos，即aposLocation指向apos变量。  gl.getAttribLocation(program, name), 给定WebGLProgram对象中某属性的下标指向位置。
+    var aposLocation = gl.getAttribLocation(program,'apos');
+
+    /*
+      内存顶点数据  ---》 显存，缓冲区 --》 顶点，着色器 ---》 片元着色器 ---》 帧缓冲区 ---》 显示器
+    */
+
+    //类型数组构造函数Float32Array创建顶点数组
+    var data=new Float32Array([0.5,0.5,-0.5,0.5,-0.5,-0.5,0.5,-0.5]);
+
+    //创建缓冲区对象; gl.createBuffer(), 创建并初始化一个用于储存顶点数据或着色数据的WebGLBuffer对象
+    var buffer=gl.createBuffer();
+    //绑定缓冲区对象,激活buffer; gl.bindBuffer(target, buffer), 将给定的 WebGLBuffer 绑定到目标。gl.ARRAY_BUFFER: 包含顶点属性的 Buffer，如顶点坐标，纹理坐标数据或顶点颜色数据。
+    // gl.ARRAY_BUFFER: 包含顶点属性的 Buffer，如顶点坐标，纹理坐标数据或顶点颜色数据。
+    gl.bindBuffer(gl.ARRAY_BUFFER,buffer);
+    //顶点数组data数据传入缓冲区; 创建并初始化了 Buffer 对象的数据存储区。
+    // gl.STREAM_DRAW: 缓冲区的内容可能不会经常使用。内容被写入缓冲区，但不被读取。
+    gl.bufferData(gl.ARRAY_BUFFER,data,gl.STATIC_DRAW);
+    //缓冲区中的数据按照一定的规律传递给位置变量apos
+    /*
+      WebGLRenderingContext.vertexAttribPointer() 方法绑定当前缓冲区范围到gl.ARRAY_BUFFER,成为当前顶点缓冲区对象的通用顶点属性并指定它的布局 (缓冲区对象中的偏移量)。
+      void gl.vertexAttribPointer(index, size, type, normalized, stride, offset);
+      index 指定要修改的顶点属性的索引。
+      size 指定每个顶点属性的组成数量，必须是 1，2，3 或 4。
+      type  指定数组中每个元素的数据类型
+      normalized 转换为浮点数时是否应该将整数数值归一化到特定的范围。
+      stride 以字节为单位指定连续顶点属性开始之间的偏移量 (即数组中一行长度)。不能大于 255。如果 stride 为 0，则假定该属性是紧密打包的，即不交错属性，每个属性在一个单独的块中，下一个顶点的属性紧跟当前顶点之后。
+      offset 指定顶点属性数组中第一部分的字节偏移量。必须是类型的字节长度的倍数。
+    */
+    gl.vertexAttribPointer(aposLocation,2,gl.FLOAT,false,0,0);
+    //允许数据传递
+    gl.enableVertexAttribArray(aposLocation);
+
+    //开始绘制图形。  void gl.drawArrays(mode, first, count), 用于从向量数组中绘制图元。
+    /*
+      mode
+        gl.POINTS: 绘制一系列点。
+        gl.LINE_STRIP: 绘制一个线条。即，绘制一系列线段，上一点连接下一点。
+        gl.LINE_LOOP: 绘制一个线圈。即，绘制一系列线段，上一点连接下一点，并且最后一点与第一个点相连。
+        gl.LINES: 绘制一系列单独线段。每两个点作为端点，线段之间不连接。
+        gl.TRIANGLE_STRIP：绘制一个三角带。
+        gl.TRIANGLE_FAN：绘制一个三角扇。
+        gl.TRIANGLES: 绘制一系列三角形。每三个点作为顶点。
+      first
+        指定从哪个点开始绘制。
+      count
+        指定绘制需要使用到多少个点。
+
+    */
+    gl.drawArrays(gl.LINE_LOOP,0,4);
+
+    //声明初始化着色器函数
+    function initShader(gl,vertexShaderSource,fragmentShaderSource){
+        var vertexShader = gl.createShader(gl.VERTEX_SHADER);
+        var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+        gl.shaderSource(vertexShader,vertexShaderSource);
+        gl.shaderSource(fragmentShader,fragmentShaderSource);
+        gl.compileShader(vertexShader);
+        gl.compileShader(fragmentShader);
+        var program = gl.createProgram();
+        gl.attachShader(program,vertexShader);
+        gl.attachShader(program,fragmentShader);
+        gl.linkProgram(program);
+        gl.useProgram(program);
+        return program;
+    }
+</script>
+</html>
