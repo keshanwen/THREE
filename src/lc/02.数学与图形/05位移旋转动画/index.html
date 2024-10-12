@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+      canvas {
+        width: 100vw;
+        height: 100vh;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas></canvas>
+    <script src="./main/index.js"></script>
+    <script>
+      let shape = new Shape("canvas");
+      // shape.rect(-0.25, 0.25, 0.5, -0.5);
+
+      // shape.rect(-50, 50, 100, -100);
+      // shape.rect(-50, 50, 100, -100, 100, 100);
+      let vector = [0, 0];
+      let rotate = 0;
+      let scale = 1;
+      function render() {
+        vector[0] += 1;
+        vector[1] += 1;
+        rotate += 0.05;
+        scale += 0.01;
+        if (vector[0] > 500) {
+          vector[0] = 0;
+          vector[1] = 0;
+        }
+        if (scale > 2) {
+          scale = 1;
+        }
+        shape.rect(-50, 50, 100, -100, vector[0], vector[1], rotate, scale);
+        requestAnimationFrame(render);
+      }
+      render();
+    </script>
+  </body>
+</html>
