@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+      canvas {
+        width: 100vw;
+        height: 100vh;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas></canvas>
+    <script>
+      // 获取canvas元素
+      let canvas = document.querySelector("canvas");
+      //   设置canvas的宽高
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      // 获取webgl上下文
+      let gl = canvas.getContext("webgl");
+
+      gl.enable(gl.DEPTH_TEST);
+
+      // 创建顶点着色器
+      const vShader = gl.createShader(gl.VERTEX_SHADER);
+
+      // 顶点着色器源码
+      gl.shaderSource(
+        vShader,
+        `
+        attribute vec4 v_position;
+        attribute vec4 v_color;
+        uniform float angle;
+        varying vec4 vColor;
+        
+        void main(){
+          mat4 rotationMatrix = mat4(
+            cos(angle),0,sin(angle),0,
+            0,1,0,0,
+            -sin(angle),0,cos(angle),0,
+            0,0,0,1
+          );
+          gl_Position = rotationMatrix*v_position;
+            vColor = v_color;
+        }
+      `
+      );
+      //   编译顶点着色器
+      gl.compileShader(vShader);
+
+      // 创建片元着色器
+      const fShader = gl.createShader(gl.FRAGMENT_SHADER);
+      // 片元着色器源码
+      gl.shaderSource(
+        fShader,
+        `
+        precision mediump float;
+            varying vec4 vColor;
+            void main(){
+            gl_FragColor = vColor;
+            }
+        `
+      );
+
+      // 编译片元着色器
+      gl.compileShader(fShader);
+
+      // 创建着色器程序链接顶点着色器和片元着色器
+      const program = gl.createProgram();
+      //   添加顶点着色器
+      gl.attachShader(program, vShader);
+      //   添加片元着色器
+      gl.attachShader(program, fShader);
+      //   链接着色器程序
+      gl.linkProgram(program);
+      //   使用着色器程序
+      gl.useProgram(program);
+
+      //   设置uniform变量
+      const angleUniform = gl.getUniformLocation(program, "angle");
+      //   创建旋转矩阵
+      let angle = 0;
+
+      gl.uniform1f(angleUniform, angle);
+
+      // 创建顶点数据
+      const position = gl.getAttribLocation(program, "v_position");
+      //   创建缓冲区
+      const pBuffer = gl.createBuffer();
+      //   绑定缓冲区
+      gl.bindBuffer(gl.ARRAY_BUFFER, pBuffer);
+
+      // 将顶点数据提供给到atttribute变量
+      gl.vertexAttribPointer(
+        //告诉attribute变量从哪里获取数据
+        position,
+        4, // 每次迭代提供4个单位的数据
+        gl.FLOAT, // 每个单位的数据类型是32位浮点型
+        false, // 不需要归一化数据
+        0, // 0 步长
+        0 // 从缓冲区的哪个位置开始读取数据
+      );
+
+      //   开启attribute变量
+      gl.enableVertexAttribArray(position);
+
+      //   创建颜色数据
+      const color = gl.getAttribLocation(program, "v_color");
+      //   创建缓冲区
+      const cBuffer = gl.createBuffer();
+      //   绑定缓冲区
+      gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
+      // 将颜色数据提供给到atttribute变量
+      gl.vertexAttribPointer(
+        //告诉attribute变量从哪里获取数据
+        color,
+        4, // 每次迭代提供2个单位的数据
+        gl.FLOAT, // 每个单位的数据类型是32位浮点型
+        false, // 不需要归一化数据
+        0, // 0 步长
+        0 // 从缓冲区的哪个位置开始读取数据
+      );
+      gl.enableVertexAttribArray(color);
+
+      let vertices = [
+        [-0.5, -0.5, 0.5, 1.0],
+        [-0.5, 0.5, 0.5, 1.0],
+        [0.5, 0.5, 0.5, 1.0],
+        [0.5, -0.5, 0.5, 1.0],
+        [-0.5, -0.5, -0.5, 1.0],
+        [-0.5, 0.5, -0.5, 1.0],
+        [0.5, 0.5, -0.5, 1.0],
+        [0.5, -0.5, -0.5, 1.0],
+      ];
+      let faces = [
+        [1, 0, 3, 2],
+        [2, 3, 7, 6],
+        [3, 0, 4, 7],
+        [6, 5, 1, 2],
+        [4, 5, 6, 7],
+        [5, 4, 0, 1],
+      ];
+
+      let faceColors = [
+        [1.0, 0.0, 0.0, 1.0],
+        [0.0, 1.0, 0.0, 1.0],
+        [0.0, 0.0, 1.0, 1.0],
+        [1.0, 1.0, 0.0, 1.0],
+        [1.0, 0.0, 1.0, 1.0],
+        [0.0, 1.0, 1.0, 1.0],
+      ];
+      let points = [];
+      let colors = [];
+      faces.forEach((face, i) => {
+        let faceIndices = [
+          face[0],
+          face[1],
+          face[2],
+          face[0],
+          face[2],
+          face[3],
+        ];
+        faceIndices.forEach((index) => {
+          points.push(vertices[index]);
+          colors.push(faceColors[i]);
+        });
+      });
+
+      //   绑定顶点缓冲区
+      gl.bindBuffer(gl.ARRAY_BUFFER, pBuffer);
+
+      //   设置顶点数据
+      gl.bufferData(
+        gl.ARRAY_BUFFER,
+        new Float32Array(points.flat()),
+        gl.STATIC_DRAW // 静态绘制
+      );
+
+      //   绑定颜色缓冲区
+      gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
+      //   设置颜色数据
+      gl.bufferData(
+        gl.ARRAY_BUFFER,
+        new Float32Array(colors.flat()),
+        gl.STATIC_DRAW // 静态绘制
+      );
+
+      function render() {
+        angle += 0.01;
+        gl.uniform1f(angleUniform, angle);
+
+        //   绘制
+        gl.drawArrays(gl.TRIANGLES, 0, points.length);
+        requestAnimationFrame(render);
+      }
+      render();
+    </script>
+  </body>
+</html>
