@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+      canvas {
+        position: absolute;
+        left: 0;
+        top: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <script type="module">
+      import Lc3 from "./src/Lc3.js";
+      import { Vector3 } from "./src/math/Vector3.js";
+      //  初始化场景
+      let scene = new Lc3.Scene();
+      //  初始化相机
+      let camera = new Lc3.PerspectiveCamera(
+        70,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+      );
+      //   设置相机的位置
+      camera.position.set(2, 2, 2);
+      camera.lookAt(new Vector3(0, 0, 0));
+      //   设置渲染器
+      let renderer = new Lc3.WebGLRenderer();
+      //   设置渲染器的大小
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      //将渲染器画布添加到body中
+      document.body.appendChild(renderer.domElement);
+      //   初始化几何体
+      // let geometry = new Lc3.BoxGeometry(1, 1, 1);
+      // //   初始化材质
+      // let material = new Lc3.MeshBasicMaterial({
+      //   color: 0x00ff00,
+      // });
+      //   初始化网格物体
+      // let cube = new Lc3.Mesh(geometry, material);
+      // //   将网格物体添加到场景中
+      // scene.add(cube);
+      // //   渲染
+      // // renderer.render(scene, camera);
+      // console.log(camera);
+
+      // 创建一个平面几何体
+      let geometry = new Lc3.PlaneGeometry(2, 2);
+      // 创建一个纹理对象
+      let material = new Lc3.MeshBasicMaterial({
+        color: 0x00ff00,
+      });
+      // 创建一个网格对象
+      let plane = new Lc3.Mesh(geometry, material);
+      // 将网格对象添加到场景中
+      scene.add(plane);
+
+      //加载纹理
+      let loader = new Lc3.TextureLoader();
+      loader.load("./assets/door/color.jpg", (texture) => {
+        material.map = texture;
+      });
+
+      // 创建控制器
+      let controls = new Lc3.OribitControls(camera, renderer.domElement);
+
+      function render() {
+        // cube.rotation.y += 0.01;
+
+        // cube.scale.x = 1 + Math.sin(cube.rotation.y) * 0.5;
+        renderer.render(scene, camera);
+        requestAnimationFrame(render);
+      }
+      render();
+    </script>
+  </body>
+</html>
